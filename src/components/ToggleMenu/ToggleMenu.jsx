@@ -1,29 +1,43 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { FaSearch, FaQuestionCircle } from 'react-icons/fa';
 import { MdOutlineTravelExplore } from 'react-icons/md';
 import { IoMdMail } from 'react-icons/io';
 import { BsFlag } from 'react-icons/bs';
 import { Link } from 'react-router';
+import { AuthContext } from '../../providers/AuthProvider';
 
 const ToggleMenu = ({ closeMenu }) => {
+  const { user, signOut } = useContext(AuthContext);
+
+  const handleSignOut = () => {
+    signOut();
+    closeMenu();
+  };
+
   return (
     <div className="bg-white rounded-lg p-4">
       {/* Title */}
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Unlock instant savings with Member Prices.
+        {user ? `Welcome back, ${user.displayName || 'User'}` : 'Unlock instant savings with Member Prices.'}
       </h3>
 
-      {/* Sign In Button */}
-      <Link to="/login" onClick={closeMenu}>
-        <button className="w-full bg-blue-600 text-white font-medium py-2 rounded-full hover:bg-blue-700 transition">
-          Sign in
-        </button>
-      </Link>
+      {/* Sign In/Sign Out Button */}
+      {user ? (
+        <></>
+      ) : (
+        <Link to="/login" onClick={closeMenu}>
+          <button className="w-full bg-blue-600 text-white font-medium py-2 rounded-full hover:bg-blue-700 transition">
+            Sign in
+          </button>
+        </Link>
+      )}
 
-      {/* Learn More */}
-      <p className="text-gray-800 font-semibold text-sm text-center mt-2 cursor-pointer hover:underline">
-        Learn more
-      </p>
+      {/* Learn More - Only show when not logged in */}
+      {!user && (
+        <p className="text-gray-800 font-semibold text-sm text-center mt-2 cursor-pointer hover:underline">
+          Learn more
+        </p>
+      )}
 
       {/* Menu Items */}
       <div className="space-y-5 py-5">
@@ -63,6 +77,20 @@ const ToggleMenu = ({ closeMenu }) => {
         <div className="flex items-center gap-3 text-gray-700 cursor-pointer hover:text-blue-600">
           <span>Feedback</span>
         </div>
+
+        {/* Sign Out Button at the bottom - Only shown when user is logged in */}
+        {user && (
+          <>
+            <hr className="text-gray-300" />
+            <button 
+              onClick={handleSignOut}
+              className="w-full text-left flex items-center gap-3 text-gray-700 hover:text-blue-600"
+              style={{ border: 'none', background: 'none', padding: 0 }}
+            >
+              <span>Sign out</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
