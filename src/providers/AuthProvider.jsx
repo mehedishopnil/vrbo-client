@@ -8,8 +8,8 @@ import {
   onAuthStateChanged,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import app from "../../firebase/firebase.config";
 import Swal from "sweetalert2";
+import app from "../firebase/firebase.config";
 
 // Create AuthContext
 export const AuthContext = createContext();
