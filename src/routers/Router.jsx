@@ -10,6 +10,7 @@ import Reservations from "../pages/Reservations/Reservations";
 import IndividualEarnings from "../components/IndividualEarnings/IndividualEarnings";
 import Listings from "../pages/Listings/Listings";
 import Resorts from "../pages/Resorts/Resorts";
+import Profile from "../pages/Profile/Profile";
 
 
 export const router = createBrowserRouter([
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
           path: 'hosting-dashboard',
           element: <HostingDashboard/>,
           children: [
+               {
+                    path: 'profile',
+                    element: <Profile/>
+               },
                {
                     path: 'earnings',
                     element: <Earnings/>

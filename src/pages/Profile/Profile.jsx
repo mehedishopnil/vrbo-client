@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AuthContext } from "../../providers/AuthProvider/AuthProvider";
+
 import { TbGenderFemale } from "react-icons/tb";
 import { SlGraduation } from "react-icons/sl";
 import { MdWorkOutline } from "react-icons/md";
@@ -8,14 +8,16 @@ import { MdOutlinePets } from "react-icons/md";
 import { MdOutlineLightbulbCircle } from "react-icons/md";
 import { MdOutlineRoomService } from "react-icons/md";
 import { FaStar } from 'react-icons/fa';
-import Spinner from "../../components/Spinner";
+import { AuthContext } from "../../providers/AuthProvider";
+import Loading from "../../components/Loading";
+
 
 const Profile = () => {
   const { UserInfo, usersData, loading } = useContext(AuthContext);
 
   // Show spinner if data is still loading or if UserInfo/usersData is not available
   if (loading || !UserInfo || !usersData) {
-    return <Spinner />;
+    return <Loading />;
   }
 
   // Get the first user from UserInfo (or use an empty object if UserInfo is empty)

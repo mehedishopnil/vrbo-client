@@ -76,7 +76,7 @@ const HostingDashboard = () => {
               </Link>
             </li>
             <li>
-              <Link to="/profile">
+              <Link to="/hosting-dashboard/profile">
                 <FaUser /> Profile
               </Link>
             </li>
@@ -152,7 +152,7 @@ const HostingDashboard = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/hosting-dashboard/profile" onClick={() => setMobileMenuOpen(false)}>
                     <FaUser /> Profile
                   </Link>
                 </li>
