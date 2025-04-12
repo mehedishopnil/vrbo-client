@@ -14,6 +14,7 @@ const Header = () => {
   const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, usersData, loading, signOut, admin } = useContext(AuthContext);
 
+
   const isUserLoggedIn = !!user;
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);

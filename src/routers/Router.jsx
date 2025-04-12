@@ -38,7 +38,11 @@ export const router = createBrowserRouter([
                {
                     path: '/resorts',
                     element: <Resorts/>
-               }
+               },
+               {
+                    path: 'profile',
+                    element: <Profile/>
+               },
           ]
      },
 
@@ -46,10 +50,7 @@ export const router = createBrowserRouter([
           path: 'hosting-dashboard',
           element: <HostingDashboard/>,
           children: [
-               {
-                    path: 'profile',
-                    element: <Profile/>
-               },
+               
                {
                     path: 'earnings',
                     element: <Earnings/>

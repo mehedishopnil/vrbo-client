@@ -27,7 +27,7 @@ const AuthProvider = ({ children }) => {
   const [usersData, setUsersData] = useState([]);
   const [UserInfo, setUserInfo] = useState([]);
 
-  console.log(yearlyEarnings)
+
   
 
   // Fetch all users data
@@ -66,6 +66,33 @@ const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+
+  // Fetch user data from the server when the authenticated user's email changes
+ useEffect(() => {
+  if (user?.email) {
+    const fetchUsersData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_Link}/users/${user.email}`);
+        if (!response.ok) {
+          throw new Error(
+            `Error fetching user data: ${response.status} ${response.statusText}`
+          );
+        }
+        const data = await response.json();
+        setUsersData(data); // Store the fetched user data in state
+      } catch (error) {
+        console.error("Error fetching user data:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsersData();
+  } else {
+    setUsersData(null); // Clear user data if no user is logged in
+  }
+}, [user?.email]);
 
   // Delete user
   const deleteUser = async (userId) => {
