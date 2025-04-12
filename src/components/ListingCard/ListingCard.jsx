@@ -15,14 +15,14 @@ const ListingCard = ({ item, index }) => {
     const selectedEarning = findEarningListById(item.id);
 
     if (selectedEarning) {
-      navigate(`/individual-earnings/${item.id}`);
+      navigate(`/hosting-dashboard/individual-earnings/${item.id}`);
     } else {
       console.error("Matching data not found");
     }
   };
 
   return (
-    <Link to={`/individual-earnings/${item.id}`}>
+    <Link to={`/hosting-dashboard/individual-earnings/${item.id}`}>
       <div className="border rounded border-gray-200 mb-4 md:mb-4 p-4 flex items-center justify-between cursor-pointer">
         <div className="flex items-center gap-10">
           <div className="avatar">

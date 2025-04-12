@@ -29,6 +29,7 @@ const AuthProvider = ({ children }) => {
   const [UserInfo, setUserInfo] = useState([]);
 
 
+
   // Fetch hotel data
   useEffect(() => {
     const fetchHotelData = async () => {
