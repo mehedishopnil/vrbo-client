@@ -6,7 +6,7 @@ import { FaUsers, FaUserShield, FaChartLine, FaHotel } from "react-icons/fa";
 import { MdOutlineDashboard } from "react-icons/md";
 
 const AdminOverview = () => {
-  const { user, admin, usersData } = useContext(AuthContext);
+  const { user, admin, allUsersData } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -17,15 +17,15 @@ const AdminOverview = () => {
 
   useEffect(() => {
     const calculateStats = () => {
-      if (usersData && usersData.length > 0) {
-        const admins = usersData.filter(u => u.isAdmin);
+      if (allUsersData && allUsersData.length > 0) {
+        const admins = allUsersData.filter(u => u.isAdmin);
         setStats({
-          totalUsers: usersData.length,
+          totalUsers: allUsersData.length,
           totalAdmins: admins.length,
-          recentSignups: usersData.filter(u => 
+          recentSignups: allUsersData.filter(u => 
             new Date(u.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           ).length,
-          activeUsers: usersData.filter(u => u.lastLogin && 
+          activeUsers: allUsersData.filter(u => u.lastLogin && 
             new Date(u.lastLogin) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
           ).length
         });
@@ -34,7 +34,7 @@ const AdminOverview = () => {
     };
 
     calculateStats();
-  }, [usersData]);
+  }, [allUsersData]);
 
   if (loading) {
     return <Loading />;

@@ -25,27 +25,37 @@ const AuthProvider = ({ children }) => {
   const [earningList, setEarningList] = useState([]);
   const [yearlyEarnings, setYearlyEarnings] = useState({});
   const [usersData, setUsersData] = useState([]);
+  const [allUsersData, setAllUsersData] = useState([]);
   const [UserInfo, setUserInfo] = useState([]);
 
 
+  console.log(allUsersData)
+
   
 
-  // Fetch all users data
-  const fetchAllUsers = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_Link}/users`);
-      if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
-      setUsersData(data);
-      return data;
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Fetch all users data
+    const fetchAllUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_Link}/users`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setAllUsersData(data);
+      } catch (error) {
+        console.error("Error fetching users:", error)
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // Fetch users on component mount
+    useEffect(() => {
+      fetchAllUsers();
+    }, []);
 
   // Update user data
   const updateUser = async (userId, updateData) => {
@@ -328,6 +338,7 @@ const AuthProvider = ({ children }) => {
     yearlyEarnings,
     usersData,
     UserInfo,
+    allUsersData,
     login,
     createUser,
     googleLogin,
