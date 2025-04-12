@@ -10,37 +10,39 @@ import ToggleMenu from "../../components/ToggleMenu/ToggleMenu";
 import { AuthContext } from "../../providers/AuthProvider";
 
 const Header = () => {
-  // const { user, signOut, usersData, loading } = useContext(AuthContext);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+  const { user, usersData, loading, signOut, admin } = useContext(AuthContext);
 
-  const { user, usersData, loading, signOut } = useContext(AuthContext);
+  const isUserLoggedIn = !!user;
 
-  const isUserLoggedIn = !!user; // Check if user is logged in
+  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
+  const toggleProfileMenu = () => setProfileMenuOpen((prev) => !prev);
+  const closeProfileMenu = () => setProfileMenuOpen(false);
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen((prev) => !prev);
-  };
-
-  const toggleProfileMenu = () => {
-    setProfileMenuOpen((prev) => !prev);
-  };
-
-  // Function to close the profile menu
-  const closeProfileMenu = () => {
-    setProfileMenuOpen(false);
-  };
-
-  // Handle signOut with SweetAlert2
   const handleSignOut = () => {
     Swal.fire({
       title: "Logged Out Successfully",
       icon: "success",
       showConfirmButton: false,
       timer: 1500,
-    }).then(() => {
-      signOut(); // Call the signOut function from AuthContext
-    });
+    }).then(() => signOut());
+  };
+
+  // Render the appropriate menu item based on admin status
+  const renderHostingMenuItem = () => {
+    if (admin) {
+      return (
+        <Link to="/admin-panel/admin-overview" onClick={toggleMobileMenu}>
+          Admin Panel
+        </Link>
+      );
+    }
+    return (
+      <Link to="/hosting-dashboard/listings" onClick={toggleMobileMenu}>
+        My Hosting
+      </Link>
+    );
   };
 
   return (
@@ -55,13 +57,11 @@ const Header = () => {
 
         {/* Mobile Actions */}
         <div className="md:hidden flex items-center gap-5">
-          {/* Get the App Button */}
-          <button className="flex items-center gap-1  md:gap-2 rounded-full border border-gray-400 px-2 py-1 md:py-2 md:px-4 hover:bg-gray-700 hover:text-white transition-colors duration-200">
-            <IoMdDownload className="text-blue-500 hover:text-white" />{" "}
+          <button className="flex items-center gap-1 md:gap-2 rounded-full border border-gray-400 px-2 py-1 md:py-2 md:px-4 hover:bg-gray-700 hover:text-white transition-colors duration-200">
+            <IoMdDownload className="text-blue-500 hover:text-white" />
             <span className="text-[15px] md:text-xl">Get the App</span>
           </button>
 
-          {/* Profile Icon and Sign Out Icon */}
           <div className="flex items-center gap-3">
             {loading ? (
               <ImSpinner8 className="text-2xl animate-spin text-gray-500" />
@@ -88,14 +88,13 @@ const Header = () => {
             ) : (
               <Link
                 to="/login"
-                className="btn btn-sm  rounded-full bg-gray-600 text-white  hover:bg-blue-700"
+                className="btn btn-sm rounded-full bg-gray-600 text-white hover:bg-blue-700"
               >
                 Sign In
               </Link>
             )}
           </div>
 
-          {/* Hamburger Menu Button */}
           <button
             onClick={toggleMobileMenu}
             className="text-gray-700 hover:text-gray-900 focus:outline-none"
@@ -126,12 +125,7 @@ const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/hosting-dashboard/listings"
-                  onClick={toggleMobileMenu}
-                >
-                  My Hosting
-                </Link>
+                {renderHostingMenuItem()}
               </li>
               <li>
                 <Link to="/contact" onClick={toggleMobileMenu}>
@@ -183,7 +177,11 @@ const Header = () => {
         <div className="hidden md:flex gap-10 font-semibold text-lg text-gray-700">
           <Link to="/">Home</Link>
           <Link to="/resorts">Resorts</Link>
-          <Link to="/hosting-dashboard/listings">My Hosting</Link>
+          {admin ? (
+            <Link to="/admin-dashboard">Admin Panel</Link>
+          ) : (
+            <Link to="/hosting-dashboard/listings">My Hosting</Link>
+          )}
           <Link to="/contact">Contact</Link>
         </div>
 

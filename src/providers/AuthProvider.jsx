@@ -11,124 +11,177 @@ import {
 import Swal from "sweetalert2";
 import app from "../firebase/firebase.config";
 
-// Create AuthContext
 export const AuthContext = createContext();
 
-// Initialize Firebase Auth
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
-  // State variables
   const [user, setUser] = useState(null);
+  const [admin, setAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hotelData, setHotelData] = useState([]);
   const [hotelListData, setHotelListData] = useState([]);
   const [earningList, setEarningList] = useState([]);
+  const [yearlyEarnings, setYearlyEarnings] = useState({});
   const [usersData, setUsersData] = useState([]);
   const [UserInfo, setUserInfo] = useState([]);
 
+  console.log(yearlyEarnings)
+  
 
+  // Fetch all users data
+  const fetchAllUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_Link}/users`);
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      setUsersData(data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Fetch hotel data
+  // Update user data
+  const updateUser = async (userId, updateData) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_Link}/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+      
+      if (!response.ok) throw new Error('Failed to update user');
+      
+      // Refresh users data if successful
+      await fetchAllUsers();
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  };
+
+  // Delete user
+  const deleteUser = async (userId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_Link}/users/${userId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete user');
+      
+      // Refresh users data if successful
+      await fetchAllUsers();
+      return await response.json();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
+  };
+
+  // Fetch yearly earnings
+  const fetchYearlyEarnings = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_Link}/yearly-earnings`);
+      if (!response.ok) throw new Error('Failed to fetch yearly earnings');
+      const data = await response.json();
+      setYearlyEarnings(data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching yearly earnings:", error);
+      throw error;
+    }
+  };
+
+  // Update yearly earnings
+  const updateYearlyEarnings = async (earningsData) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_Link}/yearly-earnings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(earningsData)
+      });
+      
+      if (!response.ok) throw new Error('Failed to update yearly earnings');
+      
+      // Refresh earnings data if successful
+      await fetchYearlyEarnings();
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating yearly earnings:", error);
+      throw error;
+    }
+  };
+
+  // Check admin status when user changes
   useEffect(() => {
-    const fetchHotelData = async () => {
+    const checkAdminStatus = async (email) => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_Link}/users/${email}`);
+        if (response.ok) {
+          const userData = await response.json();
+          setAdmin(userData?.isAdmin || false);
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        setAdmin(false);
+      }
+    };
+
+    if (user?.email) {
+      checkAdminStatus(user.email);
+      // Also fetch all users data when admin logs in
+      if (admin) {
+        fetchAllUsers();
+        fetchYearlyEarnings();
+      }
+    } else {
+      setAdmin(false);
+    }
+  }, [user]);
+
+  // Fetch initial data
+  useEffect(() => {
+    const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_Link}/hotel-data`
-        );
-        if (!response.ok) {
-          throw new Error(
-            `Error fetching hotelData.json: ${response.status} ${response.statusText}`
-          );
-        }
-        const data = await response.json();
-        setHotelData(data);
+        await Promise.all([
+          fetch(`${import.meta.env.VITE_API_Link}/hotel-data`).then(res => res.json()).then(setHotelData),
+          fetch(`${import.meta.env.VITE_API_Link}/hotels-list`).then(res => res.json()).then(setHotelListData),
+          fetch(`${import.meta.env.VITE_API_Link}/all-earnings`).then(res => res.json()).then(setEarningList),
+          fetch(`${import.meta.env.VITE_API_Link}/UserInfo`).then(res => res.json()).then(setUserInfo),
+          fetchYearlyEarnings()
+        ]);
       } catch (error) {
-        console.error("Error fetching hotelData.json:", error.message);
+        console.error("Error fetching initial data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHotelData();
+    fetchInitialData();
   }, []);
 
- 
-
-
-  // Fetch hotel list data
-  useEffect(() => {
-    const fetchHotelListData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_Link}/hotels-list`
-        );
-        if (!response.ok) {
-          throw new Error(
-            `Error fetching hotelListData.json: ${response.status} ${response.statusText}`
-          );
-        }
-        const data = await response.json();
-        setHotelListData(data);
-      } catch (error) {
-        console.error("Error fetching hotelListData.json:", error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHotelListData();
-  }, []);
-
-  // Fetch earning list
-  useEffect(() => {
-    const fetchEarningList = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_Link}/all-earnings`
-        );
-        if (!response.ok) {
-          throw new Error(
-            `Error fetching earningList.json: ${response.status} ${response.statusText}`
-          );
-        }
-        const data = await response.json();
-        setEarningList(data);
-      } catch (error) {
-        console.error("Error fetching earningList.json:", error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEarningList();
-  }, []);
-
-  // Handle user login with email and password
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
       Swal.fire({
         title: "Successfully Signed In",
         icon: "success",
-        showConfirmButton: false,
         timer: 1500,
       });
     } catch (error) {
-      console.error("Login failed:", error);
       Swal.fire({
         title: "Login Failed",
-        text: error.message || "Invalid email or password. Please try again.",
+        text: error.message || "Invalid credentials",
         icon: "error",
       });
     } finally {
@@ -136,43 +189,35 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  // Handle user creation with email and password
   const createUser = async (email, password, name) => {
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Send user info to the server
       await fetch(`${import.meta.env.VITE_API_Link}/users`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: user.uid,
           name: name,
           email: user.email,
           imageURL: user.photoURL || null,
+          isAdmin: false,
+          createdAt: new Date().toISOString()
         }),
       });
 
       setUser(user);
       Swal.fire({
-        title: "Account Created Successfully",
+        title: "Account Created",
         icon: "success",
-        showConfirmButton: false,
         timer: 1500,
       });
     } catch (error) {
-      console.error("User creation failed:", error);
       Swal.fire({
-        title: "User Creation Failed",
-        text: error.message || "An error occurred. Please try again.",
+        title: "Creation Failed",
+        text: error.message || "Error creating account",
         icon: "error",
       });
     } finally {
@@ -180,39 +225,35 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  // Handle Google login
   const googleLogin = async () => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Send user info to the server
       await fetch(`${import.meta.env.VITE_API_Link}/users`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid: user.uid,
           name: user.displayName,
           email: user.email,
           imageURL: user.photoURL || null,
+          isAdmin: false,
+          createdAt: new Date().toISOString()
         }),
       });
 
       setUser(user);
       Swal.fire({
-        title: "Successfully Signed In with Google",
+        title: "Google Login Success",
         icon: "success",
-        showConfirmButton: false,
         timer: 1500,
       });
     } catch (error) {
-      console.error("Google Login Failed:", error);
       Swal.fire({
         title: "Google Login Failed",
-        text: error.message || "An error occurred during Google login. Please try again.",
+        text: error.message || "Error with Google login",
         icon: "error",
       });
     } finally {
@@ -220,101 +261,21 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-
-  // Fetch user data from the server when the authenticated user's email changes
- useEffect(() => {
-  if (user?.email) {
-    const fetchUsersData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_Link}/users/${user.email}`);
-        if (!response.ok) {
-          throw new Error(
-            `Error fetching user data: ${response.status} ${response.statusText}`
-          );
-        }
-        const data = await response.json();
-        setUsersData(data); // Store the fetched user data in state
-      } catch (error) {
-        console.error("Error fetching user data:", error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsersData();
-  } else {
-    setUsersData(null); // Clear user data if no user is logged in
-  }
-}, [user?.email]);
-
-
-// // Fetch users list
-// const fetchUserByEmail = async (email) => {
-//   try {
-//     const response = await fetch(`${import.meta.env.VITE_API_Link}/users/${email}`);
-//     if (!response.ok) {
-//       throw new Error('User not found or server error');
-//     }
-//     const user = await response.json();
-//     console.log('User data:', user);
-//     return user;
-//   } catch (error) {
-//     console.error('Error fetching user:', error);
-//     return null;
-//   }
-// };
-
-// // Usage
-// fetchUserByEmail();
-
-
-// Fetch userInfo list
-useEffect(() => {
-  const fetchUserInfo = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_Link}/UserInfo`
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Error fetching userInfo.json: ${response.status} ${response.statusText}`
-        );
-      }
-      const data = await response.json();
-      setUserInfo(data);
-    } catch (error) {
-      console.error("Error fetching userInfo.json:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchUserInfo();
-}, []);
-
-
-
-
-
-  // Handle user sign-out
   const signOut = async () => {
     setLoading(true);
     try {
       await firebaseSignOut(auth);
       setUser(null);
+      setAdmin(false);
       Swal.fire({
-        title: "Successfully Signed Out",
+        title: "Signed Out",
         icon: "success",
-        showConfirmButton: false,
         timer: 1500,
       });
     } catch (error) {
-      console.error("Sign out failed:", error);
       Swal.fire({
         title: "Sign Out Failed",
-        text: error.message || "An error occurred. Please try again.",
+        text: error.message || "Error signing out",
         icon: "error",
       });
     } finally {
@@ -322,7 +283,6 @@ useEffect(() => {
     }
   };
 
-  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
@@ -331,19 +291,25 @@ useEffect(() => {
     return () => unsubscribe();
   }, []);
 
-  // Context value
   const authInfo = {
     user,
+    admin,
     hotelData,
     hotelListData,
     loading,
     earningList,
+    yearlyEarnings,
     usersData,
     UserInfo,
     login,
     createUser,
     googleLogin,
     signOut,
+    fetchAllUsers,
+    updateUser,
+    deleteUser,
+    fetchYearlyEarnings,
+    updateYearlyEarnings
   };
 
   return (

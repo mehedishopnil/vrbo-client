@@ -11,6 +11,11 @@ import IndividualEarnings from "../components/IndividualEarnings/IndividualEarni
 import Listings from "../pages/Listings/Listings";
 import Resorts from "../pages/Resorts/Resorts";
 import Profile from "../pages/Profile/Profile";
+import AdminPanel from "../layout/AdminPanel/AdminPanel";
+import AdminOverview from "../pages/AdminOverview/AdminOverview";
+import AdminControl from "../pages/AdminControl/AdminControl";
+import UpdateEarnings from "../pages/UpdateEarnings/UpdateEarnings";
+import UserControl from "../pages/UserControl/UserControl";
 
 
 export const router = createBrowserRouter([
@@ -60,6 +65,28 @@ export const router = createBrowserRouter([
                {
                     path: 'listings',
                     element: <Listings/>
+               }
+          ]
+     },
+     {
+          path: 'admin-panel',
+          element: <AdminPanel/>,
+          children: [
+               {
+                    path: 'admin-overview',
+                    element: <AdminOverview/>
+               },
+               {
+                    path: 'admin-control',
+                    element: <AdminControl/>
+               },
+               {
+                    path: 'earnings-update',
+                    element: <UpdateEarnings/>
+               },
+               {
+                    path: 'user-control',
+                    element: <UserControl/>
                }
           ]
      }
