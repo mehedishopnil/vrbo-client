@@ -262,6 +262,88 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // Registration function
+  // This function handles user registration using email and password.
+
+  const registration = async (email, password, name, photoURL = null) => {
+    setLoading(true);
+    try {
+      // 1. Create Firebase auth user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      // 2. Prepare user data for backend
+      const userData = {
+        uid: user.uid,
+        name: name,
+        email: user.email,
+        imageURL: photoURL || null,
+        isAdmin: false,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        provider: 'email/password' // Track registration method
+      };
+  
+      // 3. Save user data to your backend
+      const response = await fetch(`${import.meta.env.VITE_API_Link}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+  
+      if (!response.ok) {
+        // If backend save fails, delete the Firebase auth user to maintain consistency
+        await user.delete();
+        throw new Error('Failed to save user data to database');
+      }
+  
+      // 4. Update local state
+      const savedUser = await response.json();
+      setUser({
+        ...user,
+        ...savedUser // Include any additional data returned from backend
+      });
+  
+      // 5. Show success message
+      Swal.fire({
+        title: "Registration Successful!",
+        text: "Your account has been created",
+        icon: "success",
+        timer: 1500,
+      });
+  
+      return user;
+    } catch (error) {
+      console.error("Registration error:", error);
+      
+      // Handle specific Firebase errors
+      let errorMessage = "Registration failed. Please try again.";
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "This email is already registered.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Password should be at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Please enter a valid email address.";
+      }
+  
+      Swal.fire({
+        title: "Registration Failed",
+        text: error.message || errorMessage,
+        icon: "error",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  
+  // Google login function
+  // This function handles user login using Google authentication.
+
   const googleLogin = async () => {
     setLoading(true);
     try {
@@ -340,6 +422,7 @@ const AuthProvider = ({ children }) => {
     UserInfo,
     allUsersData,
     login,
+    registration,
     createUser,
     googleLogin,
     signOut,
