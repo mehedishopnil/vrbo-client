@@ -1,28 +1,9 @@
-import React, { useContext } from "react";
-import { Link } from "react-router";
-import { useNavigate } from "react-router";
-import { AuthContext } from "../../providers/AuthProvider";
+import React from "react";
+import { Link } from "react-router"; // Make sure it's from react-router-dom
 
 const ListingCard = ({ item, index }) => {
-  const navigate = useNavigate();
-  const { earningList } = useContext(AuthContext);
-
-  const findEarningListById = (id) => {
-    return earningList.find((earningItem) => earningItem.id === id);
-  };
-
-  const handleClick = () => {
-    const selectedEarning = findEarningListById(item.id);
-
-    if (selectedEarning) {
-      navigate(`/hosting-dashboard/individual-earnings/${item.id}`);
-    } else {
-      console.error("Matching data not found");
-    }
-  };
-
   return (
-    <Link to={`/hosting-dashboard/individual-earnings/${item.id}`}>
+    <Link to={`/single-resort/${item.id}`}>
       <div className="border rounded border-gray-200 mb-4 md:mb-4 p-4 flex items-center justify-between cursor-pointer">
         <div className="flex items-center gap-10">
           <div className="avatar">

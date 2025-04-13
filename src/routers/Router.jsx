@@ -16,6 +16,7 @@ import AdminOverview from "../pages/AdminOverview/AdminOverview";
 import AdminControl from "../pages/AdminControl/AdminControl";
 import UpdateEarnings from "../pages/UpdateEarnings/UpdateEarnings";
 import UserControl from "../pages/UserControl/UserControl";
+import SingleResortPage from "../components/SingleResortPage/SingleResortPage";
 
 
 export const router = createBrowserRouter([
@@ -43,6 +44,10 @@ export const router = createBrowserRouter([
                     path: 'profile',
                     element: <Profile/>
                },
+               {
+                    path: 'single-resort/:id',
+                    element: <SingleResortPage/>
+               }
           ]
      },
 
