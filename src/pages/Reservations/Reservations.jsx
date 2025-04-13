@@ -1,96 +1,76 @@
 import { useContext, useEffect, useState } from 'react';
-
-import InfoCard from '../../components/InfoCard/InfoCard';
 import { AuthContext } from '../../providers/AuthProvider';
+import Upcoming from './FilterMenu/Upcoming';
+import Complete from './FilterMenu/Complete';
+import Canceled from './FilterMenu/Canceled';
+import AllReservation from './FilterMenu/AllReservation';
+;
 
 const Reservations = () => {
-  const [filteredData, setFilteredData] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('All');
-
   const { hotelData = [], loading } = useContext(AuthContext);
 
-  useEffect(() => {
-    // Initial rendering with 'All' filter
-    filterData('All');
-  }, [hotelData]);
-
-  const filterData = (filter) => {
-    let filteredData;
-
-    if (filter === 'All') {
-      // Filter for 'Farmer' category
-      filteredData = hotelData.filter((item) => item.category === 'Farms');
-    } else {
-      // Filter data based on other filters
-      filteredData = hotelData.filter((item) => item.category === filter);
+  // Filter data based on selection
+  const getFilteredData = () => {
+    switch(selectedFilter) {
+      case 'Upcoming':
+        return hotelData.filter(item => item.status === 'upcoming');
+      case 'Complete':
+        return hotelData.filter(item => item.status === 'complete');
+      case 'Canceled':
+        return hotelData.filter(item => item.status === 'canceled');
+      case 'All':
+      default:
+        return hotelData.filter(item => item.category === 'Farms');
     }
-
-    setFilteredData(filteredData);
-    setSelectedFilter(filter);
   };
 
-  const renderFilteredData = () => {
+  const filteredData = getFilteredData();
+
+  const renderContent = () => {
     if (loading) {
-      // Show loading indicator while data is being fetched
-      return <div>Loading...</div>;
+      return <div className="flex justify-center py-10">Loading reservations...</div>;
     }
 
-    if (filteredData.length === 0) {
-      // No results found
-      if (selectedFilter === 'Upcoming') {
-        return <div className='flex justify-center md:justify-center mt-10'>
-          <p className='text-lg font-semibold text-center'>You have no upcoming reservations.</p>
-        </div>
-      } else {
-        return <div className='flex justify-center mt-10'>
-          <p className='text-lg font-semibold text-center'>No results found.<br></br><span className='font-normal text-gray-600'> Please try a different filter.</span></p>
-        </div>
-      }
+    switch(selectedFilter) {
+      case 'Upcoming':
+        return <Upcoming data={filteredData} />;
+      case 'Complete':
+        return <Complete data={filteredData} />;
+      case 'Canceled':
+        return <Canceled data={filteredData} />;
+      case 'All':
+      default:
+        return <AllReservation data={filteredData} />;
     }
-
-    return filteredData.map((item, index) => (
-      <InfoCard key={index} data={item} />
-    ));
   };
 
   return (
-    <div className="container mx-auto flex flex-col justify-center items-center md:ml-10 mt-5">
-      <h2 className="text-xl md:text-3xl font-bold mb-4">Reservations</h2>
+    <div className="container mx-auto px-4 py-5">
+      <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Reservations</h2>
 
-      {/* Filter Section */}
-      <div className="flex items-center justify-center gap-10 mb-4">
-        <button
-          className={`cursor-pointer ${selectedFilter === 'Upcoming' ? 'text-blue-500 font-bold' : ''}`}
-          onClick={() => filterData('Upcoming')}
-        >
-          Upcoming
-        </button>
-        <button
-          className={`cursor-pointer ${selectedFilter === 'Complete' ? 'text-blue-500 font-bold' : ''}`}
-          onClick={() => filterData('Complete')}
-        >
-          Complete
-        </button>
-        <button
-          className={`cursor-pointer ${selectedFilter === 'Canceled' ? 'text-blue-500 font-bold' : ''}`}
-          onClick={() => filterData('Canceled')}
-        >
-          Canceled
-        </button>
-        <button
-          className={`cursor-pointer ${selectedFilter === 'All' ? 'text-blue-500 font-bold' : ''}`}
-          onClick={() => filterData('All')}
-        >
-          All
-        </button>
-      </div>
-      <div className='flex justify-center '>
-        <span className='w-[400px] border border-gray-300'></span>
+      {/* Filter Navigation */}
+      <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-6">
+        {['All', 'Upcoming', 'Complete', 'Canceled'].map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setSelectedFilter(filter)}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              selectedFilter === filter 
+                ? 'bg-blue-500 text-white font-medium' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            {filter}
+          </button>
+        ))}
       </div>
 
-      {/* Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 justify-center items-center gap-5">
-        {renderFilteredData()}
+      <div className="border-b border-gray-200 mb-8"></div>
+
+      {/* Content Area */}
+      <div className="min-h-[300px]">
+        {renderContent()}
       </div>
     </div>
   );
