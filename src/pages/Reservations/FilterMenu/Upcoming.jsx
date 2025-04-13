@@ -6,6 +6,8 @@ const STORAGE_KEY = 'userResortsCache';
 const Upcoming = () => {
     const [cachedResorts, setCachedResorts] = useState([]);
 
+    console.log(cachedResorts);
+
     useEffect(() => {
         try {
             const storedData = localStorage.getItem(STORAGE_KEY);
