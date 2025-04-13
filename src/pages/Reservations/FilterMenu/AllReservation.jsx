@@ -4,6 +4,8 @@ import InfoCard from '../../../components/InfoCard/InfoCard';
 
 // Local storage key
 const STORAGE_KEY = 'userResortsCache';
+// Cache expiration time (1 hour in milliseconds)
+const CACHE_EXPIRATION_TIME = 60 * 60 * 1000;
 
 const AllReservation = () => {
     const { hotelData } = useContext(AuthContext);
@@ -20,38 +22,66 @@ const AllReservation = () => {
         setLoading(true);
         
         try {
-            // Try to get cached resorts from localStorage
-            const cachedResorts = localStorage.getItem(STORAGE_KEY);
-            
-            if (cachedResorts) {
-                const parsedResorts = JSON.parse(cachedResorts);
+            // Check if we need to update the cache
+            const shouldUpdateCache = () => {
+                const cachedData = localStorage.getItem(STORAGE_KEY);
+                if (!cachedData) return true;
                 
-                // Verify cached resorts still exist in current hotelData
-                const validResorts = parsedResorts.filter(cachedResort => 
+                try {
+                    const { timestamp, data } = JSON.parse(cachedData);
+                    // Update if cache is expired or data length doesn't match
+                    return Date.now() - timestamp > CACHE_EXPIRATION_TIME || 
+                           data.length !== hotelData.length;
+                } catch {
+                    return true;
+                }
+            };
+
+            if (shouldUpdateCache()) {
+                // Generate fresh random selection
+                const shuffled = [...hotelData].sort(() => 0.5 - Math.random());
+                const selectedResorts = shuffled.slice(0, 10);
+                
+                // Store with timestamp
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    timestamp: Date.now(),
+                    data: selectedResorts
+                }));
+                
+                setRandomResorts(selectedResorts.slice(0, 8));
+            } else {
+                // Use cached data but verify against current hotelData
+                const cached = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                const validResorts = cached.data.filter(cachedResort => 
                     hotelData.some(resort => resort.id === cachedResort.id)
                 );
                 
-                if (validResorts.length >= 8) {
+                // Fill any missing spots with fresh random resorts
+                if (validResorts.length < 8) {
+                    const remainingResorts = hotelData.filter(resort => 
+                        !validResorts.some(r => r.id === resort.id)
+                    );
+                    const shuffled = [...remainingResorts].sort(() => 0.5 - Math.random());
+                    const needed = 8 - validResorts.length;
+                    const combinedResorts = [
+                        ...validResorts,
+                        ...shuffled.slice(0, needed)
+                    ];
+                    
+                    setRandomResorts(combinedResorts);
+                    
+                    // Update cache with the new combined data
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        timestamp: Date.now(),
+                        data: combinedResorts.concat(shuffled.slice(needed, 10 - validResorts.length))
+                    }));
+                } else {
                     setRandomResorts(validResorts.slice(0, 8));
-                    setLoading(false);
-                    return;
                 }
             }
-
-            // If no valid cache, generate new random selection
-            const shuffled = [...hotelData].sort(() => 0.5 - Math.random());
-            const selectedResorts = shuffled.slice(0, 10); // Store 10, display 8
-            
-            // Store in localStorage
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedResorts));
-            
-            // Set state with first 8 resorts
-            setRandomResorts(selectedResorts.slice(0, 8));
-            
         } catch (error) {
             console.error("Error processing resort data:", error);
-            
-            // Fallback to random selection without caching
+            // Fallback to fresh random selection
             const shuffled = [...hotelData].sort(() => 0.5 - Math.random());
             setRandomResorts(shuffled.slice(0, 8));
         } finally {
@@ -86,14 +116,15 @@ const AllReservation = () => {
                 {randomResorts.map((resort) => (
                     <InfoCard 
                         key={resort.id} 
-                        data={resort} 
-                        isCached={true} // Optional prop to indicate this is from cache
+                        data={resort}
+                        isCached={hotelData.some(r => r.id === resort.id && 
+                            JSON.stringify(r) === JSON.stringify(resort))}
                     />
                 ))}
             </div>
             
             <div className="mt-6 text-center text-sm text-gray-500">
-                <p>These selections are saved for your next visit</p>
+                <p>Featured selections update periodically</p>
             </div>
         </div>
     );
