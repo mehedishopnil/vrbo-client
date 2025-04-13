@@ -8,7 +8,7 @@ const Listings = () => {
   const { hotelListData, hotelData, loading, user } = useContext(AuthContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredListings, setFilteredListings] = useState([]);
-  const navigate = useNavigate();
+  
 
   useEffect(() => {
     if (!loading && hotelData && hotelListData) {
@@ -27,9 +27,7 @@ const Listings = () => {
     }
   }, [hotelListData, hotelData, searchTerm, loading]);
 
-  const handleListingClick = (id) => {
-    navigate(`/single-resort/${id}`);
-  };
+  
 
   return (
     <div className="mt-8">
@@ -65,7 +63,7 @@ const Listings = () => {
             filteredListings.map((item) => (
               <div
                 key={item.id}
-                onClick={() => handleListingClick(item.id)} // Pass ID here
+                
                 className="cursor-pointer hover:shadow-md transition-shadow duration-200 mb-4"
               >
                 <ListingCard item={item} />
