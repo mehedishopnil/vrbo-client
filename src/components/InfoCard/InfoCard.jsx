@@ -23,9 +23,9 @@ const InfoCard = ({ data, showLocation = true, showDate = true, showPrice = true
           <p className={`mt-2 text-lg font-semibold text-gray-600 ${!showLocation && 'hidden'}`}>
             Location: {location}
           </p>
-          <p className={`mt-2 text-gray-600 ${!showDate && 'hidden'}`}>
+          {/* <p className={`mt-2 text-gray-600 ${!showDate && 'hidden'}`}>
             Date: {date}
-          </p>
+          </p> */}
           <p className={`mt-2 text-gray-600 ${!showPrice && 'hidden'}`}>
             Price: <span className="text-black text-lg">{price}</span>
           </p>
